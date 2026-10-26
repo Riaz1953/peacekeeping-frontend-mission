@@ -37,7 +37,7 @@ export default function Home() {
       });
 
       const response = await axios.get(
-        `http://localhost:5000/api/v1/media?${queryParams}`,
+        `https://peacekeeping-backend-mission.onrender.com/api/v1/media?${queryParams}`,
       );
       if (response.data?.data) {
         setMediaList(response.data.data);

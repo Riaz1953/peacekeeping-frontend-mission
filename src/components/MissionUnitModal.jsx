@@ -19,7 +19,7 @@ export default function MissionUnitModal({
     if (!newMission.trim()) return;
     try {
       await axios.post(
-        "http://localhost:5000/api/v1/media/config/missions-units",
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
         {
           mission: newMission,
           action: "add_mission",
@@ -37,7 +37,7 @@ export default function MissionUnitModal({
     if (!confirm(`Are you sure to delete mission ${mission}?`)) return;
     try {
       await axios.post(
-        "http://localhost:5000/api/v1/media/config/missions-units",
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
         {
           mission,
           action: "delete_mission",
@@ -55,7 +55,7 @@ export default function MissionUnitModal({
     if (!newUnit.trim() || !selectedMission) return;
     try {
       await axios.post(
-        "http://localhost:5000/api/v1/media/config/missions-units",
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
         {
           mission: selectedMission,
           unit: newUnit,
@@ -73,7 +73,7 @@ export default function MissionUnitModal({
   const handleDeleteUnit = async (mission, unit) => {
     try {
       await axios.post(
-        "http://localhost:5000/api/v1/media/config/missions-units",
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
         {
           mission,
           unit,

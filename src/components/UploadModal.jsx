@@ -32,7 +32,9 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
 
   const fetchConfig = () => {
     axios
-      .get("http://localhost:5000/api/v1/media/config/missions-units")
+      .get(
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
+      )
       .then((res) => {
         if (res.data?.data) {
           setMissionUnitsMap(res.data.data);
@@ -100,9 +102,13 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
     try {
       setLoading(true);
       toast.loading("Uploading media...", { id: "upload" });
-      await axios.post("http://localhost:5000/api/v1/media", data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axios.post(
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media",
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
       toast.success("Media uploaded successfully!", { id: "upload" });
       if (onUploadSuccess) onUploadSuccess();
       onClose();

@@ -17,7 +17,9 @@ export default function Navbar({
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/v1/media/config/missions-units")
+      .get(
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
+      )
       .then((res) => {
         if (res.data?.data && Object.keys(res.data.data).length > 0) {
           setMissionUnitsMap(res.data.data);

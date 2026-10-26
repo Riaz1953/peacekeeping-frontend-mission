@@ -37,7 +37,9 @@ export default function EditModal({ media, onClose, onUpdateSuccess }) {
 
   const fetchConfig = () => {
     axios
-      .get("http://localhost:5000/api/v1/media/config/missions-units")
+      .get(
+        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
+      )
       .then((res) => {
         if (res.data?.data) {
           setMissionUnitsMap(res.data.data);
@@ -97,9 +99,13 @@ export default function EditModal({ media, onClose, onUpdateSuccess }) {
         data.append("file", file);
       }
 
-      await axios.put(`http://localhost:5000/api/v1/media/${media._id}`, data, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      await axios.put(
+        `https://peacekeeping-backend-mission.onrender.com/api/v1/media/${media._id}`,
+        data,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        },
+      );
 
       toast.success("Media updated successfully!", { id: "update" });
       if (onUpdateSuccess) onUpdateSuccess();
