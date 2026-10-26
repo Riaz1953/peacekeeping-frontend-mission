@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import axios from "axios";
+import { manageMissionUnit } from "@/utils/api";
 import toast from "react-hot-toast";
 
 export default function MissionUnitModal({
@@ -18,13 +18,10 @@ export default function MissionUnitModal({
     e.preventDefault();
     if (!newMission.trim()) return;
     try {
-      await axios.post(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-        {
-          mission: newMission,
-          action: "add_mission",
-        },
-      );
+      await manageMissionUnit({
+        mission: newMission,
+        action: "add_mission",
+      });
       toast.success("Mission added successfully!");
       setNewMission("");
       onSuccess();
@@ -36,13 +33,10 @@ export default function MissionUnitModal({
   const handleDeleteMission = async (mission) => {
     if (!confirm(`Are you sure to delete mission ${mission}?`)) return;
     try {
-      await axios.post(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-        {
-          mission,
-          action: "delete_mission",
-        },
-      );
+      await manageMissionUnit({
+        mission,
+        action: "delete_mission",
+      });
       toast.success("Mission deleted!");
       onSuccess();
     } catch (error) {
@@ -54,14 +48,11 @@ export default function MissionUnitModal({
     e.preventDefault();
     if (!newUnit.trim() || !selectedMission) return;
     try {
-      await axios.post(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-        {
-          mission: selectedMission,
-          unit: newUnit,
-          action: "add_unit",
-        },
-      );
+      await manageMissionUnit({
+        mission: selectedMission,
+        unit: newUnit,
+        action: "add_unit",
+      });
       toast.success("Unit added successfully!");
       setNewUnit("");
       onSuccess();
@@ -72,14 +63,11 @@ export default function MissionUnitModal({
 
   const handleDeleteUnit = async (mission, unit) => {
     try {
-      await axios.post(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-        {
-          mission,
-          unit,
-          action: "delete_unit",
-        },
-      );
+      await manageMissionUnit({
+        mission,
+        unit,
+        action: "delete_unit",
+      });
       toast.success("Unit deleted!");
       onSuccess();
     } catch (error) {

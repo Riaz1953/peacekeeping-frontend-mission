@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { getMissionsAndUnits, updateMedia } from "@/utils/api";
 import toast from "react-hot-toast";
 import MissionUnitModal from "./MissionUnitModal";
 
@@ -36,10 +36,7 @@ export default function EditModal({ media, onClose, onUpdateSuccess }) {
   const [isManageOpen, setIsManageOpen] = useState(false);
 
   const fetchConfig = () => {
-    axios
-      .get(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-      )
+    getMissionsAndUnits()
       .then((res) => {
         if (res.data?.data) {
           setMissionUnitsMap(res.data.data);
@@ -99,13 +96,7 @@ export default function EditModal({ media, onClose, onUpdateSuccess }) {
         data.append("file", file);
       }
 
-      await axios.put(
-        `https://peacekeeping-backend-mission.onrender.com/api/v1/media/${media._id}`,
-        data,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      await updateMedia(media._id, data);
 
       toast.success("Media updated successfully!", { id: "update" });
       if (onUpdateSuccess) onUpdateSuccess();

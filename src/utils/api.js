@@ -30,4 +30,12 @@ export const deleteMedia = (id) => API.delete(`/media/${id}`);
 export const toggleLikeMedia = (id, userId) =>
   API.patch(`/media/${id}/like`, { userId });
 
+// Dynamic missions ebong units fetch korar function
+export const getMissionsAndUnits = () =>
+  API.get("/media/config/missions-units");
+
+// Mission ba unit add/delete (manage) korar function
+export const manageMissionUnit = (data) =>
+  API.post("/media/config/missions-units", data);
+
 export default API;

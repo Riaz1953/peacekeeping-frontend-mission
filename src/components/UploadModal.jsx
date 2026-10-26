@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { getMissionsAndUnits, uploadMedia } from "@/utils/api";
 import toast from "react-hot-toast";
 import MissionUnitModal from "./MissionUnitModal";
 
@@ -31,10 +31,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
   const [isManageOpen, setIsManageOpen] = useState(false);
 
   const fetchConfig = () => {
-    axios
-      .get(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-      )
+    getMissionsAndUnits()
       .then((res) => {
         if (res.data?.data) {
           setMissionUnitsMap(res.data.data);
@@ -102,13 +99,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
     try {
       setLoading(true);
       toast.loading("Uploading media...", { id: "upload" });
-      await axios.post(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media",
-        data,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
+      await uploadMedia(data);
       toast.success("Media uploaded successfully!", { id: "upload" });
       if (onUploadSuccess) onUploadSuccess();
       onClose();

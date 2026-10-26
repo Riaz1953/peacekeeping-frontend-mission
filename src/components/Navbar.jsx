@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { getMissionsAndUnits } from "@/utils/api";
 
 export default function Navbar({
   selectedMission,
@@ -16,10 +16,7 @@ export default function Navbar({
   });
 
   useEffect(() => {
-    axios
-      .get(
-        "https://peacekeeping-backend-mission.onrender.com/api/v1/media/config/missions-units",
-      )
+    getMissionsAndUnits()
       .then((res) => {
         if (res.data?.data && Object.keys(res.data.data).length > 0) {
           setMissionUnitsMap(res.data.data);
