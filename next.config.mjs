@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   experimental: {
     agentFeedback: true,
+  },
+  images: {
+    unoptimized: true, // Eta add korlei timeout error solve hoye jabe
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
   },
   cacheComponents: true,
   partialPrefetching: true,

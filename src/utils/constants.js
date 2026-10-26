@@ -1,0 +1,8 @@
+export const missionUnitsMap = {
+  MONUSCO: ["BANRDB", "BANENGR", "BANLOG", "BANMED", "BANAMU"],
+  UNMISS: ["BANENG", "BANMED", "BANLOG"],
+  MINUSCA: ["BANAIR", "BANMED", "BANENGR"],
+  UNIFIL: ["BANB", "BANMED"],
+  UNDOF: ["BANLOG", "BANMED"],
+  UNFICYP: ["BANENG", "BANMED"],
+};
