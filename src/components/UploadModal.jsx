@@ -1,28 +1,22 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { getMissionsAndUnits, uploadMedia } from "@/utils/api";
+import api from "@/utils/api";
 import toast from "react-hot-toast";
 import MissionUnitModal from "./MissionUnitModal";
-
-const categoriesList = [
-  "ops",
-  "logistic",
-  "medical",
-  "ndromo pob",
-  "bayoo tob",
-];
 
 export default function UploadModal({ onClose, onUploadSuccess }) {
   const [missionUnitsMap, setMissionUnitsMap] = useState({
     MONUSCO: ["BANRDB", "BANENGR", "BANLOG", "BANMED", "BANAMU"],
   });
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     keyPerson: "",
     mission: "MONUSCO",
     unit: "BANRDB",
-    category: "ops",
+    category: "",
     date: new Date().toISOString().split("T")[0],
   });
   const [file, setFile] = useState(null);
@@ -30,26 +24,46 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
   const [descWordCount, setDescWordCount] = useState(0);
   const [isManageOpen, setIsManageOpen] = useState(false);
 
-  const fetchConfig = () => {
-    getMissionsAndUnits()
-      .then((res) => {
-        if (res.data?.data) {
-          setMissionUnitsMap(res.data.data);
-          const missions = Object.keys(res.data.data);
-          if (missions.length > 0 && !missions.includes(formData.mission)) {
-            setFormData((prev) => ({
-              ...prev,
-              mission: missions[0],
-              unit: res.data.data[missions[0]][0] || "",
-            }));
-          }
+  const fetchData = async () => {
+    try {
+      // Fetch Missions and Units
+      const resConfig = await getMissionsAndUnits();
+      if (resConfig.data?.data) {
+        const dataMap = resConfig.data.data;
+        setMissionUnitsMap(dataMap);
+        const missions = Object.keys(dataMap);
+        if (missions.length > 0 && !missions.includes(formData.mission)) {
+          setFormData((prev) => ({
+            ...prev,
+            mission: missions[0],
+            unit: dataMap[missions[0]][0] || "",
+          }));
         }
-      })
-      .catch((err) => console.error("Failed to load config:", err));
+      }
+
+      // Fetch Dynamic Categories
+      const resCats = await api.get("/categories");
+      if (resCats.data?.data) {
+        const catList = resCats.data.data;
+        setCategories(catList);
+        if (
+          catList.length > 0 &&
+          (!formData.category ||
+            !catList.some((c) => c.name === formData.category))
+        ) {
+          setFormData((prev) => ({
+            ...prev,
+            category: catList[0].name,
+          }));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load config/categories:", err);
+    }
   };
 
   useEffect(() => {
-    fetchConfig();
+    fetchData();
   }, []);
 
   const availableUnits = missionUnitsMap[formData.mission] || [];
@@ -229,11 +243,11 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 cursor-pointer"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 cursor-pointer uppercase"
                 >
-                  {categoriesList.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
+                  {categories.map((cat) => (
+                    <option key={cat._id} value={cat.name}>
+                      {cat.name}
                     </option>
                   ))}
                 </select>
@@ -295,7 +309,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
         <MissionUnitModal
           missionUnitsMap={missionUnitsMap}
           onClose={() => setIsManageOpen(false)}
-          onSuccess={fetchConfig}
+          onSuccess={fetchData}
         />
       )}
     </>
