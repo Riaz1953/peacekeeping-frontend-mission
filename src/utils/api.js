@@ -3,10 +3,10 @@ import axios from "axios";
 
 // Backend server-er baseURL diye ekta API instance toiri kora hocche
 const API = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
-  // baseURL:
-  //   process.env.NEXT_PUBLIC_API_URL ||
-  //   "https://peacekeeping-backend-mission.onrender.com/api/v1",
+  // baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  baseURL:
+    process.env.NEXT_PUBLIC_API_URL ||
+    "https://peacekeeping-backend-mission.onrender.com/api/v1",
 });
 
 // All media fetch o filter korar jonno function
