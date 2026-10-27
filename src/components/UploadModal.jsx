@@ -9,7 +9,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
   const [missionUnitsMap, setMissionUnitsMap] = useState({
     MONUSCO: ["BANRDB", "BANENGR", "BANLOG", "BANMED", "BANAMU"],
   });
-  const [categories, setCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -26,36 +26,25 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
 
   const fetchData = async () => {
     try {
-      // Fetch Missions and Units
       const resConfig = await getMissionsAndUnits();
       if (resConfig.data?.data) {
         const dataMap = resConfig.data.data;
         setMissionUnitsMap(dataMap);
         const missions = Object.keys(dataMap);
         if (missions.length > 0 && !missions.includes(formData.mission)) {
+          const firstMission = missions[0];
+          const firstUnit = dataMap[firstMission][0] || "";
           setFormData((prev) => ({
             ...prev,
-            mission: missions[0],
-            unit: dataMap[missions[0]][0] || "",
+            mission: firstMission,
+            unit: firstUnit,
           }));
         }
       }
 
-      // Fetch Dynamic Categories
       const resCats = await api.get("/categories");
       if (resCats.data?.data) {
-        const catList = resCats.data.data;
-        setCategories(catList);
-        if (
-          catList.length > 0 &&
-          (!formData.category ||
-            !catList.some((c) => c.name === formData.category))
-        ) {
-          setFormData((prev) => ({
-            ...prev,
-            category: catList[0].name,
-          }));
-        }
+        setAllCategories(resCats.data.data);
       }
     } catch (err) {
       console.error("Failed to load config/categories:", err);
@@ -65,6 +54,24 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Filter categories based on currently selected Mission and Unit
+  const availableCategories = allCategories.filter(
+    (cat) => cat.mission === formData.mission && cat.unit === formData.unit,
+  );
+
+  useEffect(() => {
+    if (availableCategories.length > 0) {
+      if (!availableCategories.some((c) => c.name === formData.category)) {
+        setFormData((prev) => ({
+          ...prev,
+          category: availableCategories[0].name,
+        }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, category: "" }));
+    }
+  }, [formData.mission, formData.unit, allCategories]);
 
   const availableUnits = missionUnitsMap[formData.mission] || [];
 
@@ -77,7 +84,16 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
     }
     if (name === "mission") {
       const units = missionUnitsMap[value] || [];
-      setFormData({ ...formData, mission: value, unit: units[0] || "" });
+      setFormData({
+        ...formData,
+        mission: value,
+        unit: units[0] || "",
+        category: "",
+      });
+      return;
+    }
+    if (name === "unit") {
+      setFormData({ ...formData, unit: value, category: "" });
       return;
     }
     setFormData({ ...formData, [name]: value });
@@ -159,6 +175,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                placeholder="Enter media title..."
                 required
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
               />
@@ -173,6 +190,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
                 name="keyPerson"
                 value={formData.keyPerson}
                 onChange={handleChange}
+                placeholder="Enter key person name..."
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500"
               />
             </div>
@@ -192,6 +210,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
+                placeholder="Enter short description..."
                 rows={3}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-blue-500 resize-none"
               />
@@ -245,11 +264,15 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
                   onChange={handleChange}
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 cursor-pointer uppercase"
                 >
-                  {categories.map((cat) => (
-                    <option key={cat._id} value={cat.name}>
-                      {cat.name}
-                    </option>
-                  ))}
+                  {availableCategories.length > 0 ? (
+                    availableCategories.map((cat) => (
+                      <option key={cat._id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">No categories found for this unit</option>
+                  )}
                 </select>
               </div>
               <div>
@@ -289,7 +312,7 @@ export default function UploadModal({ onClose, onUploadSuccess }) {
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
               >
                 Cancel
               </button>

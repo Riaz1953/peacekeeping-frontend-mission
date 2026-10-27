@@ -3,9 +3,10 @@ import axios from "axios";
 
 // Backend server-er baseURL diye ekta API instance toiri kora hocche
 const API = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_API_URL ||
-    "https://peacekeeping-backend-mission.onrender.com/api/v1",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
+  // baseURL:
+  //   process.env.NEXT_PUBLIC_API_URL ||
+  //   "https://peacekeeping-backend-mission.onrender.com/api/v1",
 });
 
 // All media fetch o filter korar jonno function
@@ -37,5 +38,10 @@ export const getMissionsAndUnits = () =>
 // Mission ba unit add/delete (manage) korar function
 export const manageMissionUnit = (data) =>
   API.post("/media/config/missions-units", data);
+
+// --- CATEGORY API FUNCTIONS ---
+export const getCategories = () => API.get("/categories");
+export const addCategory = (data) => API.post("/categories", data);
+export const deleteCategory = (id) => API.delete(`/categories/${id}`);
 
 export default API;

@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { manageMissionUnit } from "@/utils/api";
-import api from "@/utils/api"; // category fetch ba manage korar jonno
+import api from "@/utils/api";
 import toast from "react-hot-toast";
 
 export default function MissionUnitModal({
@@ -15,9 +15,24 @@ export default function MissionUnitModal({
   );
   const [newUnit, setNewUnit] = useState("");
 
-  // Category states
+  // Category states under Mission & Unit
   const [categories, setCategories] = useState([]);
+  const [catMission, setCatMission] = useState(
+    Object.keys(missionUnitsMap)[0] || "",
+  );
+  const [catUnit, setCatUnit] = useState("");
   const [newCategory, setNewCategory] = useState("");
+
+  const availableUnitsForCat = missionUnitsMap[catMission] || [];
+
+  useEffect(() => {
+    if (
+      availableUnitsForCat.length > 0 &&
+      !availableUnitsForCat.includes(catUnit)
+    ) {
+      setCatUnit(availableUnitsForCat[0]);
+    }
+  }, [catMission, missionUnitsMap]);
 
   useEffect(() => {
     fetchCategories();
@@ -93,13 +108,20 @@ export default function MissionUnitModal({
     }
   };
 
-  // Category Add Handler
+  // Add Category under Selected Mission & Unit
   const handleAddCategory = async (e) => {
     e.preventDefault();
-    if (!newCategory.trim()) return;
+    if (!newCategory.trim() || !catMission || !catUnit) {
+      toast.error("Please fill mission, unit and category name");
+      return;
+    }
     try {
-      await api.post("/categories", { name: newCategory });
-      toast.success("Category added successfully!");
+      await api.post("/categories", {
+        name: newCategory,
+        mission: catMission,
+        unit: catUnit,
+      });
+      toast.success("Category added under unit successfully!");
       setNewCategory("");
       fetchCategories();
       if (onSuccess) onSuccess();
@@ -108,7 +130,6 @@ export default function MissionUnitModal({
     }
   };
 
-  // Category Delete Handler
   const handleDeleteCategory = async (id, catName) => {
     if (!confirm(`Are you sure to delete category ${catName}?`)) return;
     try {
@@ -152,7 +173,7 @@ export default function MissionUnitModal({
               />
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
               >
                 Add
               </button>
@@ -167,7 +188,7 @@ export default function MissionUnitModal({
             <select
               value={selectedMission}
               onChange={(e) => setSelectedMission(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 uppercase"
+              className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 uppercase cursor-pointer"
             >
               {Object.keys(missionUnitsMap).map((m) => (
                 <option key={m} value={m}>
@@ -185,22 +206,50 @@ export default function MissionUnitModal({
               />
               <button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
               >
                 Add Unit
               </button>
             </div>
           </form>
 
-          {/* --- NEW CATEGORY MANAGEMENT SECTION --- */}
+          {/* Add Category under Mission & Unit */}
           <form
             onSubmit={handleAddCategory}
             className="flex flex-col gap-2 pt-2 border-t border-slate-800"
           >
             <label className="text-xs font-semibold text-slate-300">
-              Add New Category
+              Add Category to Unit
             </label>
-            <div className="flex gap-2">
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={catMission}
+                onChange={(e) => {
+                  setCatMission(e.target.value);
+                  const units = missionUnitsMap[e.target.value] || [];
+                  setCatUnit(units[0] || "");
+                }}
+                className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 uppercase cursor-pointer"
+              >
+                {Object.keys(missionUnitsMap).map((m) => (
+                  <option key={m} value={m}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={catUnit}
+                onChange={(e) => setCatUnit(e.target.value)}
+                className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-200 uppercase cursor-pointer"
+              >
+                {availableUnitsForCat.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex gap-2 mt-1">
               <input
                 type="text"
                 value={newCategory}
@@ -210,17 +259,17 @@ export default function MissionUnitModal({
               />
               <button
                 type="submit"
-                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold"
+                className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
               >
                 Add Category
               </button>
             </div>
           </form>
 
-          {/* List Existing Categories */}
+          {/* List Existing Categories grouped or listed clearly */}
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold text-slate-400">
-              Existing Categories
+              Existing Categories (By Unit)
             </span>
             <div className="flex flex-wrap gap-1.5">
               {categories.map((cat) => (
@@ -228,11 +277,14 @@ export default function MissionUnitModal({
                   key={cat._id}
                   className="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg text-xs flex items-center gap-1.5 border border-slate-700"
                 >
+                  <span className="text-[10px] text-blue-400 font-bold">
+                    [{cat.mission}/{cat.unit}]
+                  </span>
                   {cat.name}
                   <button
                     type="button"
                     onClick={() => handleDeleteCategory(cat._id, cat.name)}
-                    className="text-rose-400 font-bold hover:text-rose-300"
+                    className="text-rose-400 font-bold hover:text-rose-300 cursor-pointer"
                   >
                     ×
                   </button>
@@ -258,7 +310,7 @@ export default function MissionUnitModal({
                   <button
                     type="button"
                     onClick={() => handleDeleteMission(mission)}
-                    className="text-rose-400 text-xs hover:underline"
+                    className="text-rose-400 text-xs hover:underline cursor-pointer"
                   >
                     Delete Mission
                   </button>
@@ -273,7 +325,7 @@ export default function MissionUnitModal({
                       <button
                         type="button"
                         onClick={() => handleDeleteUnit(mission, unit)}
-                        className="text-rose-400 font-bold ml-1"
+                        className="text-rose-400 font-bold ml-1 cursor-pointer"
                       >
                         ×
                       </button>
