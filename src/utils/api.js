@@ -5,8 +5,9 @@ import axios from "axios";
 const API = axios.create({
   // baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api/v1",
   baseURL:
-    "http://localhost:5000/api/v1" ||
-    "https://peacekeeping-backend-mission.onrender.com/api/v1",
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:5000/api/v1"
+      : "https://peacekeeping-backend-mission.onrender.com/api/v1",
 });
 
 // All media fetch o filter korar jonno function
