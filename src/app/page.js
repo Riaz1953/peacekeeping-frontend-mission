@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "@/utils/api";
 import Navbar from "@/components/Navbar";
 import HeroSearch from "@/components/HeroSearch";
 import MediaGrid from "@/components/MediaGrid";
 import UploadModal from "@/components/UploadModal";
+import BlurLoader from "@/components/BlurLoader";
 
 export default function Home() {
   const CURRENT_USER_ID = "guest_user";
@@ -17,6 +18,9 @@ export default function Home() {
   const [showLikedOnly, setShowLikedOnly] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   const handleResetHome = () => {
     setSelectedMission("MONUSCO");
     setSelectedUnit("");
@@ -28,6 +32,8 @@ export default function Home() {
 
   const fetchMedia = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const queryParams = new URLSearchParams({
         mission: selectedMission,
         ...(selectedUnit && { unit: selectedUnit }),
@@ -36,14 +42,17 @@ export default function Home() {
         ...(selectedDate && { date: selectedDate }),
       });
 
-      const response = await axios.get(
-        `https://peacekeeping-backend-mission.onrender.com/api/v1/media?${queryParams}`,
-      );
+      const response = await api.get(`/media?${queryParams}`);
       if (response.data?.data) {
         setMediaList(response.data.data);
       }
-    } catch (error) {
-      console.error("Failed to fetch media:", error);
+    } catch (err) {
+      console.error("Failed to fetch media:", err);
+      setError(
+        "Server-er sathe connect korte somossa hocche. Doya kore ektu por abar chesta korun.",
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,12 +91,30 @@ export default function Home() {
           showLikedOnly={showLikedOnly}
           setShowLikedOnly={setShowLikedOnly}
         />
-        <MediaGrid
-          mediaList={displayedMedia}
-          onLikeUpdate={fetchMedia}
-          setMediaList={setMediaList}
-        />
+
+        {error ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-4 bg-slate-900/50 border border-slate-800 rounded-2xl text-center p-6">
+            <p className="text-rose-400 text-sm font-medium">{error}</p>
+            <button
+              onClick={fetchMedia}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer transition-all"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : (
+          <div className="relative min-h-[350px] w-full">
+            {loading && <BlurLoader text="LOADING MEDIA..." />}
+
+            <MediaGrid
+              mediaList={displayedMedia}
+              onLikeUpdate={fetchMedia}
+              setMediaList={setMediaList}
+            />
+          </div>
+        )}
       </div>
+
       {isUploadOpen && (
         <UploadModal
           onClose={() => setIsUploadOpen(false)}
